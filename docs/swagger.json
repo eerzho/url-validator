@@ -1,0 +1,81 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/api/urls/validate": {
+            "post": {
+                "description": "validate the given urls",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Url"
+                ],
+                "summary": "validate urls",
+                "parameters": [
+                    {
+                        "description": "Validate Request",
+                        "name": "validateRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/url.ValidateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/url.ValidateResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "url.ValidateRequest": {
+            "type": "object",
+            "required": [
+                "domain",
+                "urls"
+            ],
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "urls": {
+                    "type": "array",
+                    "maxItems": 300,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "url.ValidateResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "validated": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                }
+            }
+        }
+    }
+}

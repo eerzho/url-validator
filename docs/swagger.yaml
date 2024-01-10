@@ -1,0 +1,52 @@
+definitions:
+  url.ValidateRequest:
+    properties:
+      domain:
+        type: string
+      urls:
+        items:
+          type: string
+        maxItems: 300
+        minItems: 1
+        type: array
+    required:
+    - domain
+    - urls
+    type: object
+  url.ValidateResponse:
+    properties:
+      error:
+        type: string
+      status:
+        type: string
+      validated:
+        additionalProperties:
+          type: integer
+        type: object
+    type: object
+info:
+  contact: {}
+paths:
+  /api/urls/validate:
+    post:
+      consumes:
+      - application/json
+      description: validate the given urls
+      parameters:
+      - description: Validate Request
+        in: body
+        name: validateRequest
+        required: true
+        schema:
+          $ref: '#/definitions/url.ValidateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/url.ValidateResponse'
+      summary: validate urls
+      tags:
+      - Url
+swagger: "2.0"
