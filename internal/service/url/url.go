@@ -2,6 +2,7 @@ package url
 
 import (
 	"golang.org/x/exp/slog"
+	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -18,7 +19,7 @@ func New(log *slog.Logger) *Url {
 	}
 }
 
-func (this *Url) Validate(domain string, urls []string) map[string]int32 {
+func (this *Url) Validate(domain string, urls []string) map[string]int {
 	const op = "service.url.validate"
 
 	domain = strings.TrimRight(domain, "/")
@@ -57,9 +58,9 @@ func (this *Url) Validate(domain string, urls []string) map[string]int32 {
 
 	wg.Wait()
 
-	results := make(map[string]int32)
+	results := make(map[string]int)
 	validated.Range(func(key, value any) bool {
-		results[key.(string)] = value.(int32)
+		results[key.(string)] = value.(int)
 
 		return true
 	})
@@ -74,7 +75,12 @@ func (this *Url) fetchURLStatus(fullUrl string) (int, error) {
 		return 0, err
 	}
 
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			this.log.Error("failed close body", sl.Err(err))
+		}
+	}(resp.Body)
 
 	return resp.StatusCode, nil
 }
