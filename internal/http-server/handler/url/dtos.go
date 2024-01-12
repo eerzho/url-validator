@@ -9,5 +9,5 @@ type ValidateRequest struct {
 
 type ValidateResponse struct {
 	response.Response
-	Validated map[string]int `json:"validated"`
+	Validated map[string]int32 `json:"validated"`
 }

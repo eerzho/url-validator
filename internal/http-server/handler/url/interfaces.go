@@ -1,5 +1,5 @@
 package url
 
 type Service interface {
-	Validate(domain string, urls []string) map[string]int
+	Validate(domain string, urls []string) map[string]int32
 }

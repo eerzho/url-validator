@@ -18,7 +18,7 @@ func New(log *slog.Logger) *Url {
 	}
 }
 
-func (this *Url) Validate(domain string, urls []string) map[string]int {
+func (this *Url) Validate(domain string, urls []string) map[string]int32 {
 	const op = "service.url.validate"
 
 	domain = strings.TrimRight(domain, "/")
@@ -29,43 +29,42 @@ func (this *Url) Validate(domain string, urls []string) map[string]int {
 	)
 
 	var wg sync.WaitGroup
-	mutex := sync.Mutex{}
+	var validated sync.Map
 
-	validated := make(map[string]int)
+	for _, originalUrl := range urls {
+		url := "/" + strings.Trim(originalUrl, "/")
 
-	for _, url := range urls {
-		url = "/" + strings.Trim(url, "/")
+		if _, ok := validated.Load(url); !ok {
 
-		mutex.Lock()
-		_, exists := validated[url]
-		mutex.Unlock()
-
-		if !exists {
+			log.Info("start validate " + url)
 			wg.Add(1)
 
 			go func(url string) {
+				defer wg.Done()
 
-				log.Info("starting validate " + url)
 				status, err := this.fetchURLStatus(domain + url)
-
-				mutex.Lock()
 				if err != nil {
 					log.Error("failed validate "+url, sl.Err(err))
-				} else {
-					validated[url] = status
+					validated.Store(url, -1)
+					return
 				}
-				mutex.Unlock()
 
-				log.Info("finished validate " + url)
-				wg.Done()
-
+				validated.Store(url, status)
+				log.Info("finish validate " + url)
 			}(url)
 		}
 	}
 
 	wg.Wait()
 
-	return validated
+	results := make(map[string]int32)
+	validated.Range(func(key, value any) bool {
+		results[key.(string)] = value.(int32)
+
+		return true
+	})
+
+	return results
 }
 
 func (this *Url) fetchURLStatus(fullUrl string) (int, error) {
